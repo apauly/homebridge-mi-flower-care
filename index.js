@@ -6,12 +6,12 @@ var os = require("os");
 var hostname = os.hostname();
 
 const nodePersist = require('node-persist');
-nodePersist.initSync({ dir: `~/.homebridge/plugin-persist/mi-flower-care` });
+nodePersist.init({ dir: `~/.homebridge/plugin-persist/mi-flower-care` });
 const loadState = ({ name }) => {
-  return nodePersist.getItemSync(name);
+  return nodePersist.getItem(name);
 }
 const saveState = ({ name, state }) => {
-  return nodePersist.setItemSync(name, state);
+  return nodePersist.setItem(name, state);
 }
 
 module.exports = function (homebridge) {

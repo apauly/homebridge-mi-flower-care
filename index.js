@@ -5,6 +5,15 @@ var inherits = require('util').inherits;
 var os = require("os");
 var hostname = os.hostname();
 
+const nodePersist = require('node-persist');
+nodePersist.initSync({ dir: `~/.homebridge/plugin-persist/mi-flower-care` });
+const loadState = ({ name }) => {
+  return nodePersist.getItemSync(name);
+}
+const saveState = ({ name, state }) => {
+  return nodePersist.setItemSync(name, state);
+}
+
 module.exports = function (homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
@@ -23,8 +32,12 @@ function MiFlowerCarePlugin(log, config) {
     this.interval = Math.min(Math.max(config.interval, 1), 600);
 
     this.config = config;
-
     this.storedData = {};
+
+    let savedState = loadState(this.deviceId);
+    if (savedState) {
+        this.storedData.data = savedState;
+    }
 
     if (config.humidityAlertLevel != null) {
         this.humidityAlert = true;
@@ -56,6 +69,8 @@ function MiFlowerCarePlugin(log, config) {
         if (data.deviceId = that.deviceId) {
             that.log("Lux: %s, Temperature: %s, Moisture: %s, Fertility: %s", data.lux, data.temperature, data.moisture, data.fertility);
             that.storedData.data = data;
+
+            saveState(data.deviceId, data);
 
             that.fakeGatoHistoryService.addEntry({
                 time: new Date().getTime() / 1000,
